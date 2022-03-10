@@ -1,2 +1,2 @@
 # minecraft-server
-Minecraft server docker container proxy and Kubernetes config
+Minecraft server docker container and Kubernetes config
