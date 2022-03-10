@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  minecraft:
+    image: ghcr.io/rasulalizadeh/minecraft-server/minecraft-server
+    ports:
+      - 25565:25565
+    environment:
+      EULA: "TRUE"
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+
+# volumes:
+#   data-vol:
+#     driver: local
+#     driver_opts:
+#       type: none
+#       device: ${PWD}/data
+#       o: bind

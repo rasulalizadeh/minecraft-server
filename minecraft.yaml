@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: minecraft-server
+  annotations:
+    field.cattle.io/description: Minecraft java edition server
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minecraft-config
+  namespace: minecraft-server
+data:
+  EULA: "true"
+  TYPE: "FTBA"
+  # MODE: "creative" # creative/survival/adventure/spectator
+  PVP: "false"
+  FTB_MODPACK_ID: "93"
+  # ONLINE_MODE: "false" # disable minecraft server authentication
+  SERVER_NAME: "RashtMC"
+  SERVER_PORT: "25565"
+  DIFFICULTY: "normal"
+  ALLOW_FLIGHT: "true"
+  WHITELIST_FILE: "/game/whitelist.json"
+  OPS_FILE: "/game/ops.json"
+  ENFORCE_WHITELIST: "true"
+  MAX_PLAYERS: "5"
+  MAX_WORLD_SIZE: "10000"
+  MAX_BUILD_HEIGHT: "256"
+  ALLOW_NETHER: "true"
+  ANNOUNCE_PLAYER_ACHIEVEMENTS: "true"
+  ENABLE_COMMAND_BLOCK: "true"
+  GENERATE_STRUCTURES: "true"
+  SPAWN_ANIMALS: "true"
+  SPAWN_MONSTERS: "true"
+  SPAWN_NPCS: "true"
+  VIEW_DISTANCE: "10"
+  SNOOPER_ENABLED: "false" # Disables minecraft official server feedback
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: minecraft-server-data-vol01
+  namespace: minecraft-server
+  labels:
+    type: local
+    usage: game
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: minecraft-server-data
+  hostPath:
+    path: /home/rancher/kubernetes/game/minecraft/data
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minecraft-server-data-claim
+  namespace: minecraft-server
+spec:
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: minecraft-server-data
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft-server
+  namespace: minecraft-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minecraft-server
+  template:
+    metadata:
+      labels:
+        app: minecraft-server
+    spec:
+      containers:
+        - name: minecraft
+          image: ghcr.io/rasulalizadeh/minecraft-server/minecraft-server
+          resources: { }
+          ports:
+            - containerPort: 25565
+              name: http
+              hostPort: 25565
+          envFrom:
+            - configMapRef:
+                name: minecraft-config
+          volumeMounts:
+            - mountPath: /data
+              name: minecraft-server-data-claim
+      volumes:
+        - name: minecraft-server-data-claim
+          persistentVolumeClaim:
+            claimName: minecraft-server-data-claim
