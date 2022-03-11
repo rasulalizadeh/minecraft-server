@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: minecraft-bedrock-server
+  annotations:
+    field.cattle.io/description: Minecraft java edition server
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minecraft-config
+  namespace: minecraft-bedrock-server
+data:
+  EULA: "true"
+  # TYPE: "FTBA"
+  GAMEMODE: "creative" # creative/survival/adventure/spectator
+  # PVP: "false"
+  # FTB_MODPACK_ID: "93"
+  ONLINE_MODE: "false" # disable minecraft server authentication
+  SERVER_NAME: "RashtMC"
+  # SERVER_PORT: "19132"
+  DIFFICULTY: "normal"
+  # ALLOW_FLIGHT: "true"
+  # WHITELIST_FILE: "/game/whitelist.json"
+  # OPS_FILE: "/game/ops.json"
+  # OPS: ""
+  # MEMBERS: ""
+  # VISITORS: ""
+  # WHITE_LIST_USERS: ""
+  # ENFORCE_WHITELIST: "false"
+  MAX_PLAYERS: "5"
+  # MAX_WORLD_SIZE: "10000"
+  # MAX_BUILD_HEIGHT: "256"
+  # ALLOW_NETHER: "true"
+  # ANNOUNCE_PLAYER_ACHIEVEMENTS: "true"
+  # ENABLE_COMMAND_BLOCK: "true"
+  # GENERATE_STRUCTURES: "true"
+  # SPAWN_ANIMALS: "true"
+  # SPAWN_MONSTERS: "true"
+  # SPAWN_NPCS: "true"
+  # VIEW_DISTANCE: "10"
+  # SNOOPER_ENABLED: "false" # Disables minecraft official server feedback
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: minecraft-bedrock-server-data-vol01
+  namespace: minecraft-bedrock-server
+  labels:
+    type: local
+    usage: game
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: minecraft-bedrock-server-data
+  hostPath:
+    path: /home/rancher/kubernetes/game/minecraft/bedrock-data
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minecraft-bedrock-server-data-claim
+  namespace: minecraft-bedrock-server
+spec:
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: minecraft-bedrock-server-data
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft-bedrock-server
+  namespace: minecraft-bedrock-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minecraft-bedrock-server
+  template:
+    metadata:
+      labels:
+        app: minecraft-bedrock-server
+    spec:
+      containers:
+        - name: minecraft
+          # image: ghcr.io/rasulalizadeh/minecraft-bedrock-server/minecraft-bedrock-server:java8-multiarch
+          image: ghcr.io/rasulalizadeh/minecraft-server/minecraft-bedrock-server:1.0.0
+          resources: { }
+          ports:
+            - containerPort: 19132
+              name: http
+              protocol: UDP
+              hostPort: 19132
+          envFrom:
+            - configMapRef:
+                name: minecraft-config
+          volumeMounts:
+            - mountPath: /data
+              name: minecraft-bedrock-server-data-claim
+      volumes:
+        - name: minecraft-bedrock-server-data-claim
+          persistentVolumeClaim:
+            claimName: minecraft-bedrock-server-data-claim
