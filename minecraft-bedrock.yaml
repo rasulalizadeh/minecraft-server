@@ -12,34 +12,19 @@ metadata:
   namespace: minecraft-bedrock-server
 data:
   EULA: "true"
-  # TYPE: "FTBA"
-  GAMEMODE: "creative" # creative/survival/adventure/spectator
-  # PVP: "false"
-  # FTB_MODPACK_ID: "93"
+  GAMEMODE: "creative"  # creative/survival/adventure/spectator
+  PVP: "false"
   ONLINE_MODE: "false" # disable minecraft server authentication
   SERVER_NAME: "RashtMC"
-  # SERVER_PORT: "19132"
   DIFFICULTY: "normal"
-  # ALLOW_FLIGHT: "true"
-  # WHITELIST_FILE: "/game/whitelist.json"
-  # OPS_FILE: "/game/ops.json"
-  # OPS: ""
+  ALLOW_FLIGHT: "true"
+  ALLOW_CHEATS: "true"
+  MAX_PLAYERS: "50"
+  OPS: 2533274999471459,2535457030329894
   # MEMBERS: ""
   # VISITORS: ""
-  # WHITE_LIST_USERS: ""
-  # ENFORCE_WHITELIST: "false"
-  MAX_PLAYERS: "5"
-  # MAX_WORLD_SIZE: "10000"
-  # MAX_BUILD_HEIGHT: "256"
-  # ALLOW_NETHER: "true"
-  # ANNOUNCE_PLAYER_ACHIEVEMENTS: "true"
-  # ENABLE_COMMAND_BLOCK: "true"
-  # GENERATE_STRUCTURES: "true"
-  # SPAWN_ANIMALS: "true"
-  # SPAWN_MONSTERS: "true"
-  # SPAWN_NPCS: "true"
-  # VIEW_DISTANCE: "10"
-  # SNOOPER_ENABLED: "false" # Disables minecraft official server feedback
+  DEFAULT_PLAYER_PERMISSION_LEVEL: "visitor"  # creative/survival/adventure/spectator
+  SNOOPER_ENABLED: "false" # Disables minecraft official server feedback
 ---
 apiVersion: v1
 kind: PersistentVolume
