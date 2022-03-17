@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: minecraft-bedrock-server
+  name: minecraft-bedrock-public-server
   annotations:
     field.cattle.io/description: Minecraft java edition server
 ---
@@ -9,7 +9,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: minecraft-config
-  namespace: minecraft-bedrock-server
+  namespace: minecraft-bedrock-public-server
 data:
   EULA: "true"
   GAMEMODE: "creative"  # creative/survival/adventure/spectator
@@ -19,7 +19,7 @@ data:
   DIFFICULTY: "normal"
   ALLOW_FLIGHT: "true"
   ALLOW_CHEATS: "true"
-  MAX_PLAYERS: "5"
+  MAX_PLAYERS: "50"
   OPS: 2533274999471459,2535457030329894
   # MEMBERS: ""
   # VISITORS: ""
@@ -29,33 +29,33 @@ data:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: minecraft-bedrock-server-data-vol01
-  namespace: minecraft-bedrock-server
+  name: minecraft-bedrock-public-server-data-vol02
+  namespace: minecraft-bedrock-public-server
   labels:
     type: local
     usage: game
 spec:
   capacity:
-    storage: 10Gi
+    storage: 15Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: minecraft-bedrock-server-data
+  storageClassName: minecraft-bedrock-public-server-data
   hostPath:
-    path: /home/rancher/kubernetes/game/minecraft/bedrock-data
+    path: /home/rancher/kubernetes/game/minecraft/public-data
     type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: minecraft-bedrock-server-data-claim
-  namespace: minecraft-bedrock-server
+  name: minecraft-bedrock-public-server-public-claim
+  namespace: minecraft-bedrock-public-server
 spec:
   resources:
     requests:
-      storage: 10Gi
-  storageClassName: minecraft-bedrock-server-data
+      storage: 15Gi
+  storageClassName: minecraft-bedrock-public-server-data
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
@@ -63,35 +63,37 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: minecraft-bedrock-server
-  namespace: minecraft-bedrock-server
+  name: minecraft-bedrock-public-server
+  namespace: minecraft-bedrock-public-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: minecraft-bedrock-server
+      app: minecraft-bedrock-public-server
   template:
     metadata:
       labels:
-        app: minecraft-bedrock-server
+        app: minecraft-bedrock-public-server
     spec:
       containers:
-        - name: minecraft
-          # image: ghcr.io/rasulalizadeh/minecraft-bedrock-server/minecraft-bedrock-server:java8-multiarch
+        - name: minecraft-public
+          # image: ghcr.io/rasulalizadeh/minecraft-bedrock-public-server/minecraft-bedrock-public-server:java8-multiarch
           image: ghcr.io/rasulalizadeh/minecraft-server/minecraft-bedrock-server:1.0.0
-          resources: { }
+          resources: 
+            limits:
+              memory: 1500Mi
           ports:
             - containerPort: 19132
               name: http
               protocol: UDP
-              hostPort: 19132
+              hostPort: 1401
           envFrom:
             - configMapRef:
                 name: minecraft-config
           volumeMounts:
             - mountPath: /data
-              name: minecraft-bedrock-server-data-claim
+              name: minecraft-bedrock-public-server-public-claim
       volumes:
-        - name: minecraft-bedrock-server-data-claim
+        - name: minecraft-bedrock-public-server-public-claim
           persistentVolumeClaim:
-            claimName: minecraft-bedrock-server-data-claim
+            claimName: minecraft-bedrock-public-server-public-claim
