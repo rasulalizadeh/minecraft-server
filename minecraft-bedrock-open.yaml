@@ -23,7 +23,7 @@ data:
   OPS: 2533274999471459,2535457030329894
   # MEMBERS: ""
   # VISITORS: ""
-  DEFAULT_PLAYER_PERMISSION_LEVEL: "visitor"  # creative/survival/adventure/spectator
+  DEFAULT_PLAYER_PERMISSION_LEVEL: "member"  # operator/visitor/member
   SNOOPER_ENABLED: "false" # Disables minecraft official server feedback
 ---
 apiVersion: v1
